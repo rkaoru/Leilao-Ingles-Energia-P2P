@@ -1,7 +1,10 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from web3 import Web3
+from pydantic import BaseModel
 import time
 from typing import Optional
+from typing import List
 
 # Conexão com o nó Ethereum
 ganache_url = 'http://127.0.0.1:7545'
@@ -293,10 +296,25 @@ contract = w3.eth.contract(address=contract_address, abi=contract_abi)
 
 app = FastAPI()
 
-@app.post("/cadastrar_oferta/{quantidade_disponivel}/{preco_minimo_por_kwh_em_reais}")
-async def cadastrar_oferta(quantidade_disponivel: int, preco_minimo_por_kwh_em_reais: int, sender_address: str):
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class Oferta(BaseModel):
+    quantidade_disponivel: int
+    preco_minimo_por_kwh_em_reais: int
+    sender_address: str
+
+@app.post("/cadastrar_oferta")
+async def cadastrar_oferta(oferta: Oferta):
     try:
-        tx_hash = contract.functions.cadastrarOferta(quantidade_disponivel, preco_minimo_por_kwh_em_reais).transact({'from': sender_address})
+        tx_hash = contract.functions.cadastrarOferta(
+            oferta.quantidade_disponivel, oferta.preco_minimo_por_kwh_em_reais
+        ).transact({'from': oferta.sender_address})
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         return {"message": "Oferta cadastrada com sucesso", "transaction_hash": tx_hash.hex()}
     except Exception as e:
@@ -313,7 +331,7 @@ async def get_offers():
             "precoMinimoPorKwhEmReais": offer[2],
             "ativa": offer[3]
         })
-    return {"offers": offers}
+    return {"offers": offers, "transaction_hash": None}
 
 @app.post("/fazer_proposta/{oferta_index}/{quantidade_desejada}/{preco_oferecido_em_reais}")
 async def fazer_proposta(oferta_index: int, quantidade_desejada: int, preco_oferecido_em_reais: int, sender_address: str):

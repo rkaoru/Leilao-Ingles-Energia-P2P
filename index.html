@@ -1,439 +1,82 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cadastro de Ofertas - Leilão de kWh</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    .container {
-      margin-top: 50px;
-    }
-  </style>
+  <title>Leilão de Energia</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 <body>
-
-<div class="container">
-  <!-- Mensagem de confirmação ou erro -->
-  <div id="mensagem" class="alert" style="display: none;"></div>
-
-  <!-- Tabela de cadastros -->
-  <h2 class="mt-5">Ofertas Cadastradas</h2>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Índice</th>
-        <th>Quantidade de kWh</th>
-        <th>Valor Mínimo por kWh (R$)</th>
-        <th>Chave Pública do Ofertante</th>
-      </tr>
-    </thead>
-    <tbody id="tabelaOfertas">
-      <!-- As ofertas serão preenchidas aqui via JavaScript -->
-    </tbody>
-  </table>
-
-  <!-- Formulário para fazer proposta de compra -->
-  <h2 class="mt-5">Fazer Proposta de Compra</h2>
-  <form id="propostaForm">
-    <div class="form-group">
-      <label for="ofertaIndex">Selecione a oferta (índice):</label>
-      <input type="number" class="form-control" id="ofertaIndex" placeholder="Informe o índice" required>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-9">
+        <h2>Cadastrar Oferta</h2>
+        <form id="myForm1">
+          <div class="form-group">
+            <label for="quantity">Quantidade disponível:</label>
+            <input type="number" id="quantity" name="quantity" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="price">Preço Mínimo por kWh em reais:</label>
+            <input type="number" id="price" name="price" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="address">Public Key:</label>
+            <input type="text" id="address" name="address" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar Proposta</button>
+        </form>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="quantidadeDesejada">Quantidade Desejada (kWh):</label>
-      <input type="number" class="form-control" id="quantidadeDesejada" placeholder="Informe a quantidade desejada" required>
+    <div class="row mt-5">
+      <div class="col-md-9">
+        <h2>Ofertas Disponíveis</h2>
+        <ul id="offersList" class="list-group"></ul>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="precoOferecido">Preço Oferecido (R$):</label>
-      <input type="number" class="form-control" id="precoOferecido" placeholder="Informe o preço oferecido" step="0.01" required>
+    <div class="row mt-5">
+      <div class="col-md-9">
+        <h2>Fazer Proposta</h2>
+        <form id="proposalForm">
+          <div class="form-group">
+            <label for="offerIndex">Índice da Oferta:</label>
+            <input type="number" id="offerIndex" name="offerIndex" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="desiredQuantity">Quantidade Desejada:</label>
+            <input type="number" id="desiredQuantity" name="desiredQuantity" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="offeredPrice">Preço Oferecido por kWh em reais:</label>
+            <input type="number" id="offeredPrice" name="offeredPrice" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="proposalAddress">Public Key:</label>
+            <input type="text" id="proposalAddress" name="proposalAddress" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar Proposta</button>
+        </form>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="enderecoComprador">Endereço do Comprador:</label>
-      <input type="text" class="form-control" id="enderecoComprador" placeholder="Informe o endereço do comprador" required>
+    <div class="row mt-5">
+      <div class="col-md-9">
+        <h2>Finalizar Compra</h2>
+        <form id="finalizeForm">
+          <div class="form-group">
+            <label for="finalizeIndex">Índice da Oferta:</label>
+            <input type="number" id="finalizeIndex" name="finalizeIndex" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="finalizeAddress">Public Key:</label>
+            <input type="text" id="finalizeAddress" name="finalizeAddress" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary">Finalizar Compra</button>
+        </form>
+      </div>
     </div>
-    <button type="submit" class="btn btn-primary">Enviar Proposta</button>
-  </form>
-</div>
-
-<!-- Bootstrap JS and dependencies (jQuery and Popper.js) -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<!-- Web3.js -->
-<script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
-<script>
-  // Conexão com a rede Ethereum (Ganache)
-  const web3 = new Web3('http://127.0.0.1:7545');
-
-  // Contrato inteligente MercadoEnergia
-  const contratoEndereco = '0x0415C7A80D22BDEaA7d0Aa9F5E451d67DfAb755a'; // Substitua pelo endereço do seu contrato
-  const contratoAbi = [
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_quantidadeDisponivel",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_precoMinimoPorKwhEmReais",
-				"type": "uint256"
-			}
-		],
-		"name": "cadastrarOferta",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "comprador",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "quantidade",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "preco",
-				"type": "uint256"
-			}
-		],
-		"name": "CompraEfetuada",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_ofertaIndex",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_quantidadeDesejada",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_precoOferecidoEmReais",
-				"type": "uint256"
-			}
-		],
-		"name": "fazerProposta",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "finalizarCompra",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "produtor",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "quantidade",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "precoMinimoPorKwh",
-				"type": "uint256"
-			}
-		],
-		"name": "NovaOferta",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "comprador",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "ofertaIndex",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "quantidade",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "preco",
-				"type": "uint256"
-			}
-		],
-		"name": "NovaProposta",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "ofertaIndex",
-				"type": "uint256"
-			}
-		],
-		"name": "OfertaEsgotada",
-		"type": "event"
-	},
-	{
-		"inputs": [],
-		"name": "comprador",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "etherToReais",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "numeroOfertas",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "ofertas",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "produtor",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "quantidadeDisponivel",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "precoMinimoPorKwhEmReais",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "ativa",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "precoTotal",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "quantidadeComprada",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "visualizarOfertas",
-		"outputs": [
-			{
-				"components": [
-					{
-						"internalType": "address",
-						"name": "produtor",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "quantidadeDisponivel",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "precoMinimoPorKwhEmReais",
-						"type": "uint256"
-					},
-					{
-						"internalType": "bool",
-						"name": "ativa",
-						"type": "bool"
-					}
-				],
-				"internalType": "struct MercadoEnergia.Oferta[]",
-				"name": "",
-				"type": "tuple[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-];
-  const contrato = new web3.eth.Contract(contratoAbi, contratoEndereco);
-
-  // Função para carregar as ofertas cadastradas
-  async function carregarOfertas() {
-    const todasAsOfertas = await contrato.methods.visualizarOfertas().call();
-    const selectOfertas = document.getElementById('ofertaIndex');
-    const tabelaOfertas = document.getElementById('tabelaOfertas');
-
-    todasAsOfertas.forEach((oferta, index) => {
-      const option = document.createElement('option');
-      option.value = index;
-      option.textContent = `Oferta ${index + 1}`;
-      selectOfertas.appendChild(option);
-
-      const row = tabelaOfertas.insertRow();
-      row.innerHTML = `
-        <td>${index}</td>
-        <td>${oferta.quantidadeDisponivel}</td>
-        <td>${oferta.precoMinimoPorKwhEmReais}</td>
-        <td>${oferta.produtor}</td>
-      `;
-    });
-  }
-
-  // Chamar a função para carregar as ofertas assim que a página carregar
-  window.onload = function() {
-    carregarOfertas();
-  };
-
-  // Envio de proposta de compra
-  $("#propostaForm").submit(async function(event) {
-    event.preventDefault(); // Impede o envio padrão do formulário
-    // Obter valores do formulário
-    var ofertaIndex = $("#ofertaIndex").val();
-    var quantidadeDesejada = $("#quantidadeDesejada").val();
-    var precoOferecido = $("#precoOferecido").val();
-    var enderecoComprador = $("#enderecoComprador").val();
-    
-    // Verificar se a quantidade desejada está disponível na oferta selecionada
-    const todasAsOfertas = await contrato.methods.visualizarOfertas().call();
-    if (ofertaIndex >= 0 && ofertaIndex < todasAsOfertas.length) {
-        const ofertaSelecionada = todasAsOfertas[ofertaIndex];
-        if (quantidadeDesejada <= ofertaSelecionada.quantidadeDisponivel) {
-            // Chamar a função do contrato para fazer proposta de compra
-            try {
-                await contrato.methods.fazerProposta(ofertaIndex, quantidadeDesejada, precoOferecido).send({ from: enderecoComprador });
-                // Limpar campos do formulário
-                $("#ofertaIndex").val("");
-                $("#quantidadeDesejada").val("");
-                $("#precoOferecido").val("");
-                $("#enderecoComprador").val("");
-                // Recarregar as ofertas após a proposta
-                carregarOfertas();
-                // Exibir mensagem de sucesso
-                exibirMensagem('success', 'Proposta enviada com sucesso!');
-                return;
-            } catch (error) {
-                console.error(error);
-                // Exibir mensagem de erro
-                exibirMensagem('danger', 'Ocorreu um erro ao enviar a proposta.');
-                return;
-            }
-        } else {
-            // Exibir mensagem se a quantidade desejada não estiver disponível na oferta selecionada
-            exibirMensagem('danger', 'Quantidade desejada não está disponível nesta oferta.');
-            return;
-        }
-    } else {
-        // Exibir mensagem se a oferta selecionada não existir
-        exibirMensagem('danger', 'Oferta selecionada não existe.');
-        return;
-    }
-});
-
-  // Função para exibir mensagem na tela
-  function exibirMensagem(tipo, mensagem) {
-    const mensagemElement = document.getElementById('mensagem');
-    mensagemElement.classList.remove('alert-success', 'alert-danger');
-    mensagemElement.classList.add(`alert-${tipo}`);
-    mensagemElement.textContent = mensagem;
-    mensagemElement.style.display = 'block';
-    // Esconder a mensagem após 5 segundos
-    setTimeout(() => {
-      mensagemElement.style.display = 'none';
-    }, 5000);
-  }
-</script>
-
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
