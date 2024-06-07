@@ -28,19 +28,24 @@ document.getElementById('myForm1').addEventListener('submit', async function(eve
 
 document.getElementById('proposalForm').addEventListener('submit', async function(event) {
     event.preventDefault();
-    
-    const offerIndex = document.getElementById('offerIndex').value;
-    const desiredQuantity = document.getElementById('desiredQuantity').value;
-    const offeredPrice = document.getElementById('offeredPrice').value;
+
+    const offerIndex = parseInt(document.getElementById('offerIndex').value);
+    const desiredQuantity = parseInt(document.getElementById('desiredQuantity').value);
+    const offeredPrice = parseInt(document.getElementById('offeredPrice').value);
     const address = document.getElementById('proposalAddress').value;
 
     try {
-        const response = await fetch(`http://localhost:8000/fazer_proposta/${offerIndex}/${desiredQuantity}/${offeredPrice}`, {
+        const response = await fetch(`http://localhost:8000/fazer_proposta`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ sender_address: address })
+            body: JSON.stringify({
+                oferta_index: offerIndex,
+                quantidade_desejada: desiredQuantity,
+                preco_oferecido_em_reais: offeredPrice,
+                sender_address: address
+            })
         });
 
         const result = await response.json();
@@ -52,7 +57,6 @@ document.getElementById('proposalForm').addEventListener('submit', async functio
             alert('Erro ao enviar a proposta: ' + result.detail);
         }
     } catch (error) {
-        console.error('Erro:', error);
         alert('Erro ao enviar a proposta: ' + error.message);
     }
 });

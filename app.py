@@ -331,9 +331,9 @@ async def get_offers():
             "precoMinimoPorKwhEmReais": offer[2],
             "ativa": offer[3]
         })
-    return {"offers": offers, "transaction_hash": None}
+    return {"offers": offers}
 
-@app.post("/fazer_proposta/{oferta_index}/{quantidade_desejada}/{preco_oferecido_em_reais}")
+@app.post("/fazer_proposta")
 async def fazer_proposta(oferta_index: int, quantidade_desejada: int, preco_oferecido_em_reais: int, sender_address: str):
     try:
         tx_hash = contract.functions.fazerProposta(oferta_index, quantidade_desejada, preco_oferecido_em_reais).transact({'from': sender_address})
