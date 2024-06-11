@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leilão de Energia</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Leilão de Energia</h1>
+        <hr>
+
+        <!-- Formulário para cadastrar oferta -->
+        <h2>Cadastrar Oferta</h2>
+        <form id="cadastrar-oferta-form">
+            <div class="form-group">
+                <label for="quantidade-disponivel">Quantidade Disponível (kWh)</label>
+                <input type="number" class="form-control" id="quantidade-disponivel" required>
+            </div>
+            <div class="form-group">
+                <label for="preco-inicial-por-kwh-em-reais">Preço Inicial por kWh em Reais</label>
+                <input type="number" class="form-control" id="preco-inicial-por-kwh-em-reais" required>
+            </div>
+            <div class="form-group">
+                <label for="from">Conta do Produtor</label>
+                <input type="text" class="form-control" id="from" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Cadastrar Oferta</button>
+        </form>
+
+        <h2>Visualizar Ofertas</h2>
+        <table id="ofertas-table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Índice</th>
+                    <th>Produtor</th>
+                    <th>Quantidade Disponível (kWh)</th>
+                    <th>Preço Atual por kWh em Reais</th>
+                    <th>Ativa</th>
+               </tr>
+            </thead>
+            <tbody id="ofertas-tbody">
+            </tbody>
+        </table>
+
+        <!-- Formulário para fazer proposta de compra -->
+        <h2>Fazer Proposta de Compra</h2>
+        <form id="fazer-proposta-form">
+            <div class="form-group">
+                <label for="oferta-index">Índice da Oferta</label>
+                <input type="number" class="form-control" id="oferta-index" required>
+            </div>
+            <div class="form-group">
+                <label for="quantidade-desejada">Quantidade Desejada (kWh)</label>
+                <input type="number" class="form-control" id="quantidade-desejada" required>
+            </div>
+            <div class="form-group">
+                <label for="preco-oferecido-por-kwh-em-reais">Preço Oferecido por kWh em Reais</label>
+                <input type="number" class="form-control" id="preco-oferecido-por-kwh-em-reais" required>
+            </div>
+            <div class="form-group">
+                <label for="from">Conta do Comprador</label>
+                <input type="text" class="form-control" id="from" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Fazer Proposta</button>
+        </form>
+
+        <!-- Formulário para finalizar leilão -->
+        <h2>Finalizar Leilão</h2>
+        <form id="finalizar-leilao-form">
+            <div class="form-group">
+                <label for="oferta-index">Índice da Oferta</label>
+                <input type="number" class="form-control" id="oferta-index" required>
+            </div>
+            <div class="form-group">
+                <label for="from">Conta do Produtor</label>
+                <input type="text" class="form-control" id="from" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Finalizar Leilão</button>
+        </form>
+
+        <!-- Botão para remover todas as ofertas -->
+        <h2>Remover Todas as Ofertas</h2>
+        <form id="remover-todas-ofertas-form">
+            <div class="form-group">
+                <label for="from">Conta do Produtor</label>
+                <input type="text" class="form-control" id="from" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Remover Todas as Ofertas</button>
+        </form>
+
+        <!-- Tabela para visualizar ofertas -->
+        
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Função para cadastrar oferta
+            $('#cadastrar-oferta-form').submit(function(event) {
+                event.preventDefault();
+                const quantidadeDisponivel = parseFloat($('#quantidade-disponivel').val());
+                const precoInicialPorKwhEmReais = parseFloat($('#preco-inicial-por-kwh-em-reais').val());
+                const from = $('#from').val();
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:3000/cadastrarOferta',
+                    data: JSON.stringify({ quantidadeDisponivel, precoInicialPorKwhEmReais, from }),
+                    contentType: 'application/json',
+                    success: function(data) {
+                        alert('Oferta cadastrada com sucesso!');
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Erro ao cadastrar oferta: ' + error);
+                    }
+                });
+            });
+
+            // Função para fazer proposta de compra
+            $('#fazer-proposta-form').submit(function(event) {
+                event.preventDefault();
+                const ofertaIndex = $('#oferta-index').val();
+                const quantidadeDesejada = $('#quantidade-desejada').val();
+                const precoOferecidoPorKwhEmReais = $('#preco-oferecido-por-kwh-em-reais').val();
+                const from = $('#from').val();
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:3000/fazerProposta',
+                    data: JSON.stringify({ ofertaIndex, quantidadeDesejada, precoOferecidoPorKwhEmReais, from }),
+                    contentType: 'application/json',
+                    success: function(data) {
+                        alert('Proposta enviada com sucesso!');
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Erro ao fazer proposta: ' + error);
+                    }
+                });
+            });
+
+            // Função para finalizar leilão
+            $('#finalizar-leilao-form').submit(function(event) {
+                event.preventDefault();
+                const ofertaIndex = $('#oferta-index').val();
+                const from = $('#from').val();
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:3000/finalizarLeilao',
+                    data: JSON.stringify({ ofertaIndex, from }),
+                    contentType: 'application/json',
+                    success: function(data) {
+                        alert('Leilão finalizado com sucesso!');
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Erro ao finalizar leilão: ' + error);
+                    }
+                });
+            });
+
+            // Função para remover todas as ofertas
+            $('#remover-todas-ofertas-form').submit(function(event) {
+                event.preventDefault();
+                const from = $('#from').val();
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:3000/removerTodasOfertas',
+                    data: JSON.stringify({ from }),
+                    contentType: 'application/json',
+                    success: function(data) {
+                        alert('Todas as ofertas removidas com sucesso!');
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Erro ao remover ofertas: ' + error);
+                    }
+                });
+            });
+
+            // Função para visualizar ofertas
+            $.ajax({
+                type: 'GET',
+                url: 'http://localhost:3000/visualizarOfertas',
+                success: function(data) {
+                    if (Array.isArray(data)) {
+                    $.each(data, function(index, oferta) {
+                        $('#ofertas-tbody').append(`
+                        <tr>
+                            <td>${index}</td>
+                            <td>${oferta.produtor}</td>
+                            <td>${oferta.quantidadeDisponivel} kWh</td>
+                            <td>R$ ${oferta.precoAtualPorKwhEmReais}</td>
+                            <td>${oferta.ativa? 'Sim' : 'Não'}</td>
+                        </tr>
+                        `);
+                    });
+                    } else {
+                    console.error('Dados recebidos não são um array:', data);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Erro ao visualizar ofertas: ', error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
