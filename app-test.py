@@ -2,29 +2,17 @@ import json
 from web3 import Web3
 import requests
 
-# Connect to the Ethereum node (this could be a local node or an Infura node)
-web3 = Web3(Web3.HTTPProvider('http://localhost:7545'))  # Change to your provider
-account_address = '0xeE14D01237920078Ccdf113D4Aa73c201041A00F'  # Replace with your account address
-private_key = '0x38e128195739d65acb779b93978f9b7a7796a764322f6c4c1fc47ba0cecd2325'  # Replace with your private key
+# Conectando ao nó Ethereum (pode ser um nó local ou Infura)
+web3 = Web3(Web3.HTTPProvider('http://localhost:7545'))  # Altere para seu provedor
 
-# Contract ABI (replace with your contract's ABI)
-contract_abi = json.loads('''[{"inputs":[{"internalType":"uint256","name":"_duracaoLeilaoEmMinutos","type":"uint256"},{"internalType":"address payable","name":"_beneficiario","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"comprador","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"LancesRestituidos","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"vencedor","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"LeilaoFinalizado","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"produtor","type":"address"},{"indexed":false,"internalType":"uint256","name":"quantidade","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"precoMinimoPorKwh","type":"uint256"}],"name":"NovaOferta","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"comprador","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"NovoLance","type":"event"},{"inputs":[],"name":"beneficiario","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"etherToReais","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"fazerLance","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"finalizarLeilao","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lances","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"leilaoAtivo","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maiorLance","outputs":[{"internalType":"address payable","name":"comprador","type":"address"},{"internalType":"uint256","name":"valor","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"melhorLance","outputs":[{"internalType":"address","name":"comprador","type":"address"},{"internalType":"uint256","name":"valor","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"oferta","outputs":[{"internalType":"address payable","name":"produtor","type":"address"},{"internalType":"uint256","name":"quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"precoMinimoPorKwhEmReais","type":"uint256"},{"internalType":"bool","name":"ativa","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"retirarLance","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"tempoFinal","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]''')
+# Endereço do contrato e ABI (substitua pelo endereço do seu contrato e ABI)
+contract_address = '0xEed1260a0312ba9E24437961FC6BFCB1a922b86c'
+contract_abi = json.loads('''[{"inputs":[{"internalType":"uint256","name":"_duracaoLeilaoEmMinutos","type":"uint256"},{"internalType":"address payable","name":"_beneficiario","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"comprador","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"LancesRestituidos","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"vencedor","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"LeilaoFinalizado","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"produtor","type":"address"},{"indexed":false,"internalType":"uint256","name":"quantidade","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"precoMinimoPorKwh","type":"uint256"}],"name":"NovaOferta","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"comprador","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"NovoLance","type":"event"},{"inputs":[],"name":"beneficiario","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_produtor","type":"address"},{"internalType":"uint256","name":"_quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"_precoMinimoPorKwhEmReais","type":"uint256"}],"name":"definirOferta","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"etherToReais","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"fazerLance","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"finalizarLeilao","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lances","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"leilaoAtivo","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maiorLance","outputs":[{"internalType":"address payable","name":"comprador","type":"address"},{"internalType":"uint256","name":"valor","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"melhorLance","outputs":[{"internalType":"address","name":"comprador","type":"address"},{"internalType":"uint256","name":"valor","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"oferta","outputs":[{"internalType":"address payable","name":"produtor","type":"address"},{"internalType":"uint256","name":"quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"precoMinimoPorKwhEmReais","type":"uint256"},{"internalType":"bool","name":"ativa","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"participantes","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"retirarLance","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"tempoFinal","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
+''')
 
-# Define the available quantity and minimum price per kWh in Reais
-quantidade_disponivel = 100  # kWh
-preco_minimo_por_kwh = 2  # Reais
+contract = web3.eth.contract(address=contract_address, abi=contract_abi)
 
-# Define the desired quantity to buy
-quantidade_desejada = 50  # kWh
-
-# Ensure the buyer offers a valid price
-preco_minimo_necessario = preco_minimo_por_kwh * quantidade_desejada
-preco_oferecido_reais = 120  # Example offer in Reais
-
-if preco_oferecido_reais < preco_minimo_necessario:
-    raise ValueError(f"O preço oferecido deve ser no mínimo {preco_minimo_necessario} Reais")
-
-# Get conversion rate from Reais to Ether
+# Obter taxa de conversão de Reais para Ether
 def get_eth_to_brl_conversion_rate():
     url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=brl"
     response = requests.get(url)
@@ -34,32 +22,7 @@ def get_eth_to_brl_conversion_rate():
 eth_to_brl_rate = get_eth_to_brl_conversion_rate()
 print(f"1 ETH = {eth_to_brl_rate} BRL")
 
-# Convert offered price from Reais to Ether
-preco_oferecido_ether = preco_oferecido_reais / eth_to_brl_rate
-print(f"Preço oferecido em Ether: {preco_oferecido_ether} ETH")
-
-# Convert Ether to Wei
-preco_oferecido_wei = web3.to_wei(preco_oferecido_ether, 'ether')
-print(f"Preço oferecido em Wei: {preco_oferecido_wei} Wei")
-
-# Deploy the contract (if not already deployed)
-def deploy_contract(duracao_leilao_em_minutos, beneficiario):
-    contract_bytecode = '0x60806040526101f4600a553480156200001757600080fd5b50604051620013773803806200137783398181016040528101906200003d9190620001da565b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff1603620000af576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401620000a69062000282565b60405180910390fd5b603c82620000be9190620002d3565b42620000cb91906200031e565b60058190555080600460006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506001600660006101000a81548160ff021916908315150217905550505062000359565b600080fd5b6000819050919050565b6200014f816200013a565b81146200015b57600080fd5b50565b6000815190506200016f8162000144565b92915050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000620001a28262000175565b9050919050565b620001b48162000195565b8114620001c057600080fd5b50565b600081519050620001d481620001a9565b92915050565b60008060408385031215620001f457620001f362000135565b5b600062000204858286016200015e565b92505060206200021785828601620001c3565b9150509250929050565b600082825260208201905092915050565b7f42656e65666963696172696f20696e76616c69646f0000000000000000000000600082015250565b60006200026a60158362000221565b9150620002778262000232565b602082019050919050565b600060208201905081810360008301526200029d816200025b565b9050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b6000620002e0826200013a565b9150620002ed836200013a565b9250828202620002fd816200013a565b91508282048414831517620003175762000316620002a4565b5b5092915050565b60006200032b826200013a565b915062000338836200013a565b9250828201905080821115620003535762000352620002a4565b5b92915050565b61100e80620003696000396000f3fe60806040526004361061009c5760003560e01c80632e28be2d116100645780632e28be2d1461016957806343fd703f146101735780635bc544a41461019e578063d67f16c1146101c9578063e0b92cc8146101f4578063e6e1e6a31461020b5761009c565b8063190b8b4e146100a15780632541edcc146100cc57806328316787146100fa57806329e0c347146101265780632a10098d14610152575b600080fd5b3480156100ad57600080fd5b506100b6610248565b6040516100c39190610967565b60405180910390f35b3480156100d857600080fd5b506100e161025b565b6040516100f194939291906109dc565b60405180910390f35b34801561010657600080fd5b5061010f6102a6565b60405161011d929190610a42565b60405180910390f35b34801561013257600080fd5b5061013b6102dd565b604051610149929190610a6b565b60405180910390f35b34801561015e57600080fd5b5061016761030f565b005b61017161052a565b005b34801561017f57600080fd5b506101886107b3565b6040516101959190610a94565b60405180910390f35b3480156101aa57600080fd5b506101b36107d9565b6040516101c09190610aaf565b60405180910390f35b3480156101d557600080fd5b506101de6107df565b6040516101eb9190610aaf565b60405180910390f35b34801561020057600080fd5b506102096107e5565b005b34801561021757600080fd5b50610232600480360381019061022d9190610afb565b610934565b60405161023f9190610aaf565b60405180910390f35b600660009054906101000a900460ff1681565b60008060000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16908060010154908060020154908060030160009054906101000a900460ff16905084565b600080600760000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16600760010154915091509091565b60078060000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16908060010154905082565b600554421015610354576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161034b90610b85565b60405180910390fd5b600660009054906101000a900460ff166103a3576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161039a90610bf1565b60405180910390fd5b6000600660006101000a81548160ff021916908315150217905550600073ffffffffffffffffffffffffffffffffffffffff16600760000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146104ed57600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166108fc6007600101549081150290604051600060405180830381858888f19350505050158015610484573d6000803e3d6000fd5b507f937f062ef1f494cacb5479537636c4694bd94d69a26eb8f1b0c240dcfb8ef7f2600760000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff166007600101546040516104e0929190610c70565b60405180910390a1610528565b7f937f062ef1f494cacb5479537636c4694bd94d69a26eb8f1b0c240dcfb8ef7f260008060405161051f929190610cd4565b60405180910390a15b565b600554421061056e576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161056590610d49565b60405180910390fd5b60076001015434116105b5576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016105ac90610ddb565b60405180910390fd5b600a54670de0b6b3a76400006000600201546105d19190610e2a565b6105db9190610e9b565b34101561061d576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161061490610f18565b60405180910390fd5b600073ffffffffffffffffffffffffffffffffffffffff16600760000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146106f75760076001015460096000600760000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008282546106ef9190610f38565b925050819055505b60405180604001604052803373ffffffffffffffffffffffffffffffffffffffff16815260200134815250600760008201518160000160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550602082015181600101559050507f6bba65479db013d87eaae6d87f1636d243944dd9325deb92db30e6c335c9bf9433346040516107a9929190610a42565b60405180910390a1565b600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600a5481565b60055481565b6000600960003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205490506000811161086c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161086390610fb8565b60405180910390fd5b6000600960003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055503373ffffffffffffffffffffffffffffffffffffffff166108fc829081150290604051600060405180830381858888f193505050501580156108f7573d6000803e3d6000fd5b507f8559beb686c66ffa103c1f0fbe2f867bb39c7b0ea0e2910479ae5bebab932b2b3382604051610929929190610a42565b60405180910390a150565b60096020528060005260406000206000915090505481565b60008115159050919050565b6109618161094c565b82525050565b600060208201905061097c6000830184610958565b92915050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b60006109ad82610982565b9050919050565b6109bd816109a2565b82525050565b6000819050919050565b6109d6816109c3565b82525050565b60006080820190506109f160008301876109b4565b6109fe60208301866109cd565b610a0b60408301856109cd565b610a186060830184610958565b95945050505050565b6000610a2c82610982565b9050919050565b610a3c81610a21565b82525050565b6000604082019050610a576000830185610a33565b610a6460208301846109cd565b9392505050565b6000604082019050610a8060008301856109b4565b610a8d60208301846109cd565b9392505050565b6000602082019050610aa960008301846109b4565b92915050565b6000602082019050610ac460008301846109cd565b92915050565b600080fd5b610ad881610a21565b8114610ae357600080fd5b50565b600081359050610af581610acf565b92915050565b600060208284031215610b1157610b10610aca565b5b6000610b1f84828501610ae6565b91505092915050565b600082825260208201905092915050565b7f4c65696c616f2061696e6461206e616f207465726d696e6f7500000000000000600082015250565b6000610b6f601983610b28565b9150610b7a82610b39565b602082019050919050565b60006020820190508181036000830152610b9e81610b62565b9050919050565b7f4c65696c616f206a6120666f692066696e616c697a61646f0000000000000000600082015250565b6000610bdb601883610b28565b9150610be682610ba5565b602082019050919050565b60006020820190508181036000830152610c0a81610bce565b9050919050565b6000819050919050565b6000610c36610c31610c2c84610982565b610c11565b610982565b9050919050565b6000610c4882610c1b565b9050919050565b6000610c5a82610c3d565b9050919050565b610c6a81610c4f565b82525050565b6000604082019050610c856000830185610c61565b610c9260208301846109cd565b9392505050565b6000819050919050565b6000610cbe610cb9610cb484610c99565b610c11565b6109c3565b9050919050565b610cce81610ca3565b82525050565b6000604082019050610ce96000830185610a33565b610cf66020830184610cc5565b9392505050565b7f4c65696c616f206a61207465726d696e6f750000000000000000000000000000600082015250565b6000610d33601283610b28565b9150610d3e82610cfd565b602082019050919050565b60006020820190508181036000830152610d6281610d26565b9050919050565b7f4c616e6365206465766520736572206d61696f7220717565206f20617475616c60008201527f206d61696f72206c616e63650000000000000000000000000000000000000000602082015250565b6000610dc5602c83610b28565b9150610dd082610d69565b604082019050919050565b60006020820190508181036000830152610df481610db8565b9050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b6000610e35826109c3565b9150610e40836109c3565b9250828202610e4e816109c3565b91508282048414831517610e6557610e64610dfb565b5b5092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b6000610ea6826109c3565b9150610eb1836109c3565b925082610ec157610ec0610e6c565b5b828204905092915050565b7f4c616e63652061626169786f20646f20707265636f206d696e696d6f00000000600082015250565b6000610f02601c83610b28565b9150610f0d82610ecc565b602082019050919050565b60006020820190508181036000830152610f3181610ef5565b9050919050565b6000610f43826109c3565b9150610f4e836109c3565b9250828201905080821115610f6657610f65610dfb565b5b92915050565b7f4e616f2068612066756e646f7320706172612072657469726172000000000000600082015250565b6000610fa2601a83610b28565b9150610fad82610f6c565b602082019050919050565b60006020820190508181036000830152610fd181610f95565b905091905056fea26469706673582212207530a4a9e0cee2cf1f66fea789faf7b292e25a9e9fd0773815db87a54d4cebcc64736f6c63430008130033'  # Replace with your contract's bytecode
-    contract = web3.eth.contract(abi=contract_abi, bytecode=contract_bytecode)
-    nonce = web3.eth.get_transaction_count(account_address)
-    transaction = contract.constructor(duracao_leilao_em_minutos, beneficiario).build_transaction({
-        'from': account_address,
-        'gas': 2000000,
-        'gasPrice': web3.to_wei('50', 'gwei'),
-        'nonce': nonce
-    })
-    signed_txn = web3.eth.account.sign_transaction(transaction, private_key=private_key)
-    tx_hash = web3.eth.send_raw_transaction(signed_txn.rawTransaction)
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-    print(f"Contract deployed at address: {tx_receipt.contractAddress}")
-    return tx_receipt.contractAddress
-
-# Check if auction is still active
+# Função para verificar se o leilão está ativo
 def is_auction_active():
     try:
         return contract.functions.leilaoAtivo().call()
@@ -67,8 +30,8 @@ def is_auction_active():
         print(e)
         return False
 
-# Function to make a bid
-def fazer_lance(valor_wei):
+# Função para fazer um lance
+def fazer_lance(account_address, private_key, valor_wei):
     if not is_auction_active():
         raise ValueError("Leilao ja terminou")
 
@@ -83,13 +46,60 @@ def fazer_lance(valor_wei):
     signed_txn = web3.eth.account.sign_transaction(transaction, private_key=private_key)
     tx_hash = web3.eth.send_raw_transaction(signed_txn.rawTransaction)
     print(f"Transaction hash: {tx_hash.hex()}")
+    return tx_hash
 
-beneficiario = '0xCF4F0aA7C6c70C7f886C45fe93abc2d09574dB06'
+# Função para verificar o melhor lance
+def get_best_bid():
+    try:
+        comprador, valor = contract.functions.melhorLance().call()
+        return comprador, valor
+    except Exception as e:
+        print(e)
+        return None, None
 
-# Deploy the contract (for demonstration purposes, redeploy the contract to ensure auction is active)
-contract_address = deploy_contract(10, beneficiario)  # Auction duration set to 10 minutes
+# Contas e chaves privadas (substitua por suas próprias contas e chaves privadas)
+accounts = [
+    {
+        'address': '0xfaE9E22c707d80adE9985d049BecFc5b111e5431',
+        'private_key': '0x6fb6b301cb49d92f421656e519a172a3d088021ce69e4d1326e6c42eb44fbb16'
+    },
+    {
+        'address': '0xD73EcC320180FC2476aB380714D0F5B0F73A3C12',
+        'private_key': '0x2b956980ccfc4d1994cb9d796f86be360b85e9e0b8ec3449728ada110485a031'
+    }
+]
 
-contract = web3.eth.contract(address=contract_address, abi=contract_abi)
+# Valores dos lances em Reais
+precos_oferecidos_reais = [200, 230]  # Exemplos de lances em Reais
 
-# Make a bid with the calculated Wei value
-fazer_lance(preco_oferecido_wei)
+for i, account in enumerate(accounts):
+    preco_oferecido_reais = precos_oferecidos_reais[i]
+    preco_oferecido_ether = preco_oferecido_reais / eth_to_brl_rate
+    preco_oferecido_wei = web3.to_wei(preco_oferecido_ether, 'ether')
+    fazer_lance(account['address'], account['private_key'], preco_oferecido_wei)
+    comprador, valor = get_best_bid()
+    if comprador:
+        print(f"Melhor lance até agora: {valor} Wei por {comprador}")
+
+print("Todos os lances foram feitos.")
+
+beneficiario_address = '0xCF4F0aA7C6c70C7f886C45fe93abc2d09574dB06'
+beneficiario_private_key = '0xc73755d506e7ad84041025f5b17700103da4136406017d63d8172e18fa61c543'
+
+def finalizar_leilao(beneficiario_address, beneficiario_private_key):
+    if not is_auction_active():
+        raise ValueError("Leilao ja terminou")
+
+    nonce = web3.eth.get_transaction_count(beneficiario_address)
+    transaction = contract.functions.finalizarLeilao().build_transaction({
+        'from': beneficiario_address,
+        'gas': 2000000,
+        'gasPrice': web3.to_wei('50', 'gwei'),
+        'nonce': nonce
+    })
+    signed_txn = web3.eth.account.sign_transaction(transaction, private_key=beneficiario_private_key)
+    tx_hash = web3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    print(f"Finalizando leilao - Transaction hash: {tx_hash.hex()}")
+    return tx_hash
+
+finalizar_leilao(beneficiario_address, beneficiario_private_key)
