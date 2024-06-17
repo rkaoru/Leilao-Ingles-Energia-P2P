@@ -7,6 +7,7 @@ import json
 import requests
 from app_otim import EthereumAuction
 from bson import ObjectId  # Importando ObjectId corretamente
+from datetime import datetime
 
 # Configuração do MongoDB
 client = MongoClient("mongodb://localhost:27017/")
@@ -121,6 +122,24 @@ def get_eth_to_brl_conversion_rate():
     response = requests.get(url)
     data = response.json()
     return data['ethereum']['brl']
+
+# Função para remover ofertas com tempo limite expirado
+def remover_ofertas_expiradas(collection):
+    try:
+        current_time = datetime.now()
+        for oferta in collection.find():
+            tempo_limite_oferta = datetime.strptime(oferta["time_limit"], "%Y-%m-%d %H:%M:%S")
+            if current_time > tempo_limite_oferta:
+                collection.delete_one({"_id": oferta["_id"]})
+                print(f"Oferta expirada removida: {oferta['_id']}")
+    except Exception as e:
+        print(f"Erro ao remover ofertas expiradas: {str(e)}")
+
+# Endpoint para remover ofertas expiradas imediatamente (para fins de teste)
+@app.post("/remover_ofertas_expiradas/")
+async def remover_ofertas_expiradas_endpoint():
+    remover_ofertas_expiradas(collection)
+    return {"message": "Ofertas expiradas removidas imediatamente."}
 
 # Rodando o servidor usando Uvicorn
 if __name__ == "__main__":
