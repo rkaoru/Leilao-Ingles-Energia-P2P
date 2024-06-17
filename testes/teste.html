@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Ofertas</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Ofertas Cadastradas</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Endereço Público</th>
+                    <th>Energia Disponível (kWh)</th>
+                    <th>Preço Mínimo (R$)</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="ofertasTableBody">
+                <!-- Ofertas serão carregadas aqui -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal para Fazer Proposta -->
+    <div class="modal fade" id="propostaModal" tabindex="-1" aria-labelledby="propostaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="propostaModalLabel">Fazer Proposta</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="propostaForm">
+                        <div class="form-group">
+                            <label for="accountAddress">Endereço Público</label>
+                            <input type="text" class="form-control" id="accountAddress" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="privateKey">Chave Privada</label>
+                            <input type="password" class="form-control" id="privateKey" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantidadeDesejada">Quantidade Desejada (kWh)</label>
+                            <input type="number" class="form-control" id="quantidadeDesejada" required>
+                            <small id="quantidadeAlerta" class="form-text text-danger d-none">A quantidade desejada não pode ser maior que a quantidade ofertada.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="lance">Lance (R$)</label>
+                            <input type="number" class="form-control" id="lance" required>
+                            <small id="lanceMinimo" class="form-text text-muted"></small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar Proposta</button>
+                    </form>
+                    <div id="erro" class="alert alert-danger mt-3 d-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ofertas = [];
+        let ofertaSelecionada = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('http://localhost:8000/ofertas/')
+                .then(response => response.json())
+                .then(data => {
+                    ofertas = data;
+                    const ofertasTableBody = document.getElementById('ofertasTableBody');
+                    data.forEach(oferta => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${oferta.nome}</td>
+                            <td>${oferta.endereco_publico}</td>
+                            <td>${oferta.energia_disponivel}</td>
+                            <td>${oferta.preco_minimo}</td>
+                            <td><button class="btn btn-primary btn-proposta" data-id="${oferta.id}" data-toggle="modal" data-target="#propostaModal">Fazer Proposta</button></td>
+                        `;
+                        ofertasTableBody.appendChild(row);
+                    });
+
+                    document.querySelectorAll('.btn-proposta').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const ofertaId = this.getAttribute('data-id');
+                            ofertaSelecionada = ofertas.find(o => o.id === ofertaId);
+                            document.getElementById('quantidadeDesejada').value = '';
+                            document.getElementById('lance').value = '';
+                            document.getElementById('accountAddress').value = '';
+                            document.getElementById('privateKey').value = '';
+                            document.getElementById('lanceMinimo').textContent = '';
+                            document.getElementById('quantidadeAlerta').classList.add('d-none');
+                            document.getElementById('erro').classList.add('d-none');
+                        });
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+
+            document.getElementById('quantidadeDesejada').addEventListener('input', function() {
+                const quantidadeDesejada = parseFloat(this.value);
+                if (ofertaSelecionada) {
+                    const precoMinimo = ofertaSelecionada.preco_minimo;
+                    const energiaDisponivel = ofertaSelecionada.energia_disponivel;
+                    if (quantidadeDesejada > energiaDisponivel) {
+                        document.getElementById('quantidadeAlerta').classList.remove('d-none');
+                    } else {
+                        document.getElementById('quantidadeAlerta').classList.add('d-none');
+                    }
+                    const lanceMinimo = quantidadeDesejada * precoMinimo;
+                    document.getElementById('lance').setAttribute('min', lanceMinimo);
+                    document.getElementById('lanceMinimo').textContent = `Lance mínimo: R$ ${lanceMinimo.toFixed(2)}`;
+                }
+            });
+
+            document.getElementById('propostaForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const quantidadeDesejada = parseFloat(document.getElementById('quantidadeDesejada').value);
+                const lance = parseFloat(document.getElementById('lance').value);
+                const accountAddress = document.getElementById('accountAddress').value;
+                const privateKey = document.getElementById('privateKey').value;
+
+                if (ofertaSelecionada) {
+                    const precoMinimo = ofertaSelecionada.preco_minimo;
+                    const energiaDisponivel = ofertaSelecionada.energia_disponivel;
+                    const lanceMinimo = quantidadeDesejada * precoMinimo;
+
+                    if (quantidadeDesejada > energiaDisponivel) {
+                        document.getElementById('erro').textContent = `A quantidade desejada não pode ser maior que ${energiaDisponivel} kWh.`;
+                        document.getElementById('erro').classList.remove('d-none');
+                        return;
+                    }
+
+                    if (lance < lanceMinimo) {
+                        document.getElementById('erro').textContent = `O lance deve ser no mínimo R$ ${lanceMinimo.toFixed(2)}.`;
+                        document.getElementById('erro').classList.remove('d-none');
+                        return;
+                    }
+
+                    fetch('http://localhost:8000/fazer-lance/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            account_address: accountAddress,
+                            private_key: privateKey,
+                            lance_reais: lance,
+                        }),
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => { throw new Error(data.detail); });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert('Proposta enviada com sucesso!');
+                        $('#propostaModal').modal('hide');
+                    })
+                    .catch((error) => {
+                        document.getElementById('erro').textContent = error.message;
+                        document.getElementById('erro').classList.remove('d-none');
+                    });
+                }
+            });
+        });
+    </script>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
