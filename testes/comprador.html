@@ -6,17 +6,26 @@
     <title>Visualizar Ofertas</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Estilo personalizado para a tabela */
+        .table-expandida th, .table-expandida td {
+            white-space: nowrap; /* Evita que o conteúdo da célula quebre em várias linhas */
+            overflow: hidden; /* Oculta o conteúdo que transborda da célula */
+            text-overflow: ellipsis; /* Adiciona reticências (...) quando o conteúdo da célula transborda */
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
         <h2 class="mb-4">Ofertas Cadastradas</h2>
-        <table class="table">
+        <table class="table table-expandida"> <!-- Adiciona a classe "table-expandida" -->
             <thead>
                 <tr>
                     <th>Nome</th>
                     <th>Endereço Público</th>
                     <th>Energia Disponível (kWh)</th>
                     <th>Preço Mínimo (R$)</th>
+                    <th>Tempo Limite</th>
                     <th>Ação</th>
                 </tr>
             </thead>
@@ -81,6 +90,7 @@
                             <td>${oferta.endereco_publico}</td>
                             <td>${oferta.energia_disponivel}</td>
                             <td>${oferta.preco_minimo}</td>
+                            <td>${oferta.time_limit}</td>
                             <td><button class="btn btn-primary btn-proposta" data-id="${oferta.id}" data-toggle="modal" data-target="#propostaModal">Fazer Proposta</button></td>
                         `;
                         ofertasTableBody.appendChild(row);
@@ -145,7 +155,7 @@
                         return;
                     }
 
-                    fetch('http://localhost:8000/fazer-lance/', {
+                    fetch('http://localhost:8000/fazer_lance/', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
