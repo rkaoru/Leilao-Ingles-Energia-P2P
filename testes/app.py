@@ -5,17 +5,15 @@ from pymongo import MongoClient
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import requests
-from app_otim import EthereumAuction
-from bson import ObjectId  # Importando ObjectId corretamente
+from contract_connection import EthereumAuction
+from bson import ObjectId 
 from datetime import datetime
 
-# Configuração do MongoDB
 client = MongoClient("mongodb://localhost:27017/")
 db = client.tcc
 collection = db.ofertas
 
-# Configuração do contrato Ethereum
-contract_address = '0x697e5fb9b57ed464129dB2306A06bb4fbcbfe8a7'
+contract_address = '0xAe015Fe67407fefC1363C58Ad6E6d2ccBf43EF66'
 contract_abi = json.loads('''[{"inputs":[{"internalType":"uint256","name":"_duracaoLeilaoEmMinutos","type":"uint256"},{"internalType":"address payable","name":"_beneficiario","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"comprador","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"LancesRestituidos","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"vencedor","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"LeilaoFinalizado","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"produtor","type":"address"},{"indexed":false,"internalType":"uint256","name":"quantidade","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"precoMinimoPorKwh","type":"uint256"}],"name":"NovaOferta","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"comprador","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"NovoLance","type":"event"},{"inputs":[],"name":"beneficiario","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_produtor","type":"address"},{"internalType":"uint256","name":"_quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"_precoMinimoPorKwhEmReais","type":"uint256"}],"name":"definirOferta","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"etherToReais","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"fazerLance","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"finalizarLeilao","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lances","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"leilaoAtivo","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maiorLance","outputs":[{"internalType":"address payable","name":"comprador","type":"address"},{"internalType":"uint256","name":"valor","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"melhorLance","outputs":[{"internalType":"address","name":"comprador","type":"address"},{"internalType":"uint256","name":"valor","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"oferta","outputs":[{"internalType":"address payable","name":"produtor","type":"address"},{"internalType":"uint256","name":"quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"precoMinimoPorKwhEmReais","type":"uint256"},{"internalType":"bool","name":"ativa","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"participantes","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"retirarLance","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"tempoFinal","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tempoFinalLeilao","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]''')
 ethereum_auction = EthereumAuction(contract_address, contract_abi)
 
@@ -142,14 +140,13 @@ async def get_tempo_final_leilao():
     except Exception as e:
         return {"error": str(e)}
 
-# Função para obter a taxa de conversão ETH para BRL
 def get_eth_to_brl_conversion_rate():
-    # url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=brl"
-    # response = requests.get(url)
-    # data = response.json()
-    # return data['ethereum']['brl']
-    valor_ether_hoje = 19455 #19/06/2024
-    return valor_ether_hoje
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=brl"
+    response = requests.get(url)
+    data = response.json()
+    return data['ethereum']['brl']
+    # valor_ether_hoje = 19455 #19/06/2024
+    # return valor_ether_hoje
 
 # Função para remover ofertas com tempo limite expirado
 def remover_ofertas_expiradas(collection):

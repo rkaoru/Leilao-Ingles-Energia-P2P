@@ -1,10 +1,10 @@
 from web3 import Web3
-from datetime import datetime, timezone
+from datetime import datetime
 import pytz
 
 class EthereumAuction:
     def __init__(self, contract_address, contract_abi):
-        self.web3 = Web3(Web3.HTTPProvider('http://localhost:7545'))  # Altere para seu provedor
+        self.web3 = Web3(Web3.HTTPProvider('http://localhost:7545'))
         self.contract = self.web3.eth.contract(address=contract_address, abi=contract_abi)
 
     def is_auction_active(self):
