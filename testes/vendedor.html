@@ -25,7 +25,7 @@
             </div>
             <div class="form-group">
                 <label for="energiaDisponivel">Quantidade disponível de Energia (kWh)</label>
-                <input type="number" class="form-control" id="energiaDisponivel" placeholder="Insira a quantidade de energia disponível" required>
+                <input type="number" step="0.01" class="form-control" id="energiaDisponivel" placeholder="Insira a quantidade de energia disponível" required>
             </div>
             <div class="form-group">
                 <label for="precoMinimo">Preço mínimo por kWh (R$)</label>
@@ -48,23 +48,6 @@
             <tbody id="ofertasTableBody">
                 <!-- Ofertas serão carregadas aqui -->
             </tbody>
-            <tfoot>
-                <tr>
-                    <th colspan="4" class="text-center">Melhor Oferta</th>
-                </tr>
-                <tr>
-                    <td colspan="1">Comprador</td>
-                    <td colspan="1">Valor (ETH)</td>
-                    <td colspan="1">Valor (R$)</td>
-                    <td colspan="1"></td>
-                </tr>
-                <tr id="melhorOferta">
-                    <td id="melhorComprador"></td>
-                    <td id="melhorValorEth"></td>
-                    <td id="melhorValorReais"></td>
-                    <td></td>
-                </tr>
-            </tfoot>
         </table>
     </div>
 
@@ -117,27 +100,7 @@
                                 `;
                                 ofertasTableBody.appendChild(row);
                             });
-                            fetchMelhorOferta();
-                        } else {
-                            document.getElementById('melhorOfertaSection').style.display = 'none';
                         }
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    });
-            };
-
-            const fetchMelhorOferta = () => {
-                fetch('http://localhost:8000/maior_lance/')
-                    .then(response => response.json())
-                    .then(data => {
-                        // Atualiza os elementos da melhor oferta com os dados recebidos
-                        document.getElementById('melhorComprador').textContent = data.comprador;
-                        document.getElementById('melhorValorEth').textContent = data.valor_ether.toFixed(6);
-                        document.getElementById('melhorValorReais').textContent = data.valor_reais.toFixed(2);
-
-                        // Mostra a seção da melhor oferta
-                        document.getElementById('melhorOfertaSection').style.display = 'block';
                     })
                     .catch((error) => {
                         console.error('Error:', error);
@@ -168,7 +131,6 @@
                     alert('Oferta cadastrada com sucesso!');
                     document.getElementById('ofertaForm').reset();
                     fetchOfertas();
-                    fetchMelhorOferta();
                 })
                 .catch((error) => {
                     console.error('Error:', error);
