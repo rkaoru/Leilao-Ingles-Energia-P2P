@@ -1,79 +1,163 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from web3 import Web3
 from pydantic import BaseModel
+from typing import List
+from pymongo import MongoClient
+from fastapi.middleware.cors import CORSMiddleware
+import json
+import requests
+from contract_connection import EthereumAuction
+from bson import ObjectId 
+from datetime import datetime
 
-# Conexão com o nó Ethereum
-ganache_url = 'http://127.0.0.1:7545'
-w3 = Web3(Web3.HTTPProvider(ganache_url))
+client = MongoClient("mongodb://localhost:27017/")
+db = client.tcc
+collection = db.ofertas
 
-# Endereço e ABI do contrato
-contract_address = '0x45c83DB14E5D58104A8f18Ce6908e3aeb2D97244'
-contract_abi = [{"anonymous":False,"inputs":[{"indexed":False,"internalType":"address","name":"comprador","type":"address"},{"indexed":False,"internalType":"uint256","name":"quantidade","type":"uint256"},{"indexed":False,"internalType":"uint256","name":"preco","type":"uint256"}],"name":"CompraEfetuada","type":"event"},{"anonymous":False,"inputs":[{"indexed":False,"internalType":"address","name":"produtor","type":"address"},{"indexed":False,"internalType":"uint256","name":"quantidade","type":"uint256"},{"indexed":False,"internalType":"uint256","name":"precoMinimoPorKwh","type":"uint256"}],"name":"NovaOferta","type":"event"},{"anonymous":False,"inputs":[{"indexed":False,"internalType":"address","name":"comprador","type":"address"},{"indexed":False,"internalType":"uint256","name":"ofertaIndex","type":"uint256"},{"indexed":False,"internalType":"uint256","name":"quantidade","type":"uint256"},{"indexed":False,"internalType":"uint256","name":"preco","type":"uint256"}],"name":"NovaProposta","type":"event"},{"anonymous":False,"inputs":[{"indexed":False,"internalType":"uint256","name":"ofertaIndex","type":"uint256"}],"name":"OfertaEsgotada","type":"event"},{"inputs":[{"internalType":"uint256","name":"_quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"_precoMinimoPorKwhEmReais","type":"uint256"}],"name":"cadastrarOferta","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"comprador","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"etherToReais","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_ofertaIndex","type":"uint256"},{"internalType":"uint256","name":"_quantidadeDesejada","type":"uint256"},{"internalType":"uint256","name":"_precoOferecidoEmReais","type":"uint256"}],"name":"fazerProposta","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"finalizarCompra","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"numeroOfertas","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"ofertas","outputs":[{"internalType":"address","name":"produtor","type":"address"},{"internalType":"uint256","name":"quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"precoMinimoPorKwhEmReais","type":"uint256"},{"internalType":"bool","name":"ativa","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"precoTotal","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"quantidadeComprada","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"removerTodasOfertas","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"visualizarOfertas","outputs":[{"components":[{"internalType":"address","name":"produtor","type":"address"},{"internalType":"uint256","name":"quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"precoMinimoPorKwhEmReais","type":"uint256"},{"internalType":"bool","name":"ativa","type":"bool"}],"internalType":"struct MercadoEnergia.Oferta[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"}]
- # ABI do contrato
-
-# Instanciar contrato
-contract = w3.eth.contract(address=contract_address, abi=contract_abi)
+contract_address = '0xAe015Fe67407fefC1363C58Ad6E6d2ccBf43EF66'
+contract_abi = json.loads('''[{"inputs":[{"internalType":"uint256","name":"_duracaoLeilaoEmMinutos","type":"uint256"},{"internalType":"address payable","name":"_beneficiario","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"comprador","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"LancesRestituidos","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"vencedor","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"LeilaoFinalizado","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"produtor","type":"address"},{"indexed":false,"internalType":"uint256","name":"quantidade","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"precoMinimoPorKwh","type":"uint256"}],"name":"NovaOferta","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"comprador","type":"address"},{"indexed":false,"internalType":"uint256","name":"valor","type":"uint256"}],"name":"NovoLance","type":"event"},{"inputs":[],"name":"beneficiario","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_produtor","type":"address"},{"internalType":"uint256","name":"_quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"_precoMinimoPorKwhEmReais","type":"uint256"}],"name":"definirOferta","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"etherToReais","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"fazerLance","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"finalizarLeilao","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lances","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"leilaoAtivo","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maiorLance","outputs":[{"internalType":"address payable","name":"comprador","type":"address"},{"internalType":"uint256","name":"valor","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"melhorLance","outputs":[{"internalType":"address","name":"comprador","type":"address"},{"internalType":"uint256","name":"valor","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"oferta","outputs":[{"internalType":"address payable","name":"produtor","type":"address"},{"internalType":"uint256","name":"quantidadeDisponivel","type":"uint256"},{"internalType":"uint256","name":"precoMinimoPorKwhEmReais","type":"uint256"},{"internalType":"bool","name":"ativa","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"participantes","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"retirarLance","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"tempoFinal","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tempoFinalLeilao","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]''')
+ethereum_auction = EthereumAuction(contract_address, contract_abi)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://127.0.0.1:5500", 
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 class Oferta(BaseModel):
-    quantidade_disponivel: int
-    preco_minimo_por_kwh_em_reais: int
-    sender_address: str
+    nome: str
+    endereco_publico: str
+    endereco_privado: str
+    energia_disponivel: float
+    preco_minimo: float
 
-@app.post("/cadastrar_oferta")
-async def cadastrar_oferta(oferta: Oferta):
+class OfertaInDB(Oferta):
+    id: str
+    time_limit: str
+    maior_lance_publico: str = None
+    maior_lance_valor: float = None
+    quantidade_desejada: float = None
+
+class LanceRequest(BaseModel):
+    account_address: str
+    private_key: str
+    lance_reais: float
+    oferta_id: str
+    quantidade_desejada: float
+
+class FinalizarLeilaoRequest(BaseModel):
+    oferta_id: str
+    beneficiario_address: str
+    beneficiario_private_key: str
+
+@app.post("/ofertas/", response_model=OfertaInDB)
+def criar_oferta(oferta: Oferta):
+    oferta_dict = oferta.dict()
+    tempo_final_leilao = ethereum_auction.get_tempo_final_leilao()
+    oferta_in_db = OfertaInDB(**oferta_dict, id="", time_limit=tempo_final_leilao) 
+    result = collection.insert_one(oferta_in_db.dict())  
+    oferta_in_db.id = str(result.inserted_id)  
+    return oferta_in_db
+
+@app.get("/ofertas/", response_model=List[OfertaInDB])
+def listar_ofertas():
+    ofertas = []
+    for oferta in collection.find():
+        oferta["id"] = str(oferta["_id"])
+        del oferta["_id"]  
+        ofertas.append(oferta)
+    return ofertas
+
+@app.post("/fazer_lance/")
+async def fazer_lance(request: LanceRequest):
     try:
-        tx_hash = contract.functions.cadastrarOferta(oferta.quantidade_disponivel, oferta.preco_minimo_por_kwh_em_reais).transact({'from': oferta.sender_address})
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-        return {"message": "Oferta cadastrada com sucesso", "transaction_hash": tx_hash.hex()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        valor_ethereum = request.lance_reais / get_eth_to_brl_conversion_rate()
+        valor_wei = ethereum_auction.web3.to_wei(valor_ethereum, 'ether')
+        tx_hash = ethereum_auction.fazer_lance(request.account_address, request.private_key, valor_wei)
+        
+        collection.update_one(
+            {"_id": ObjectId(request.oferta_id)},
+            {"$set": {
+                "maior_lance_publico": request.account_address,
+                "maior_lance_valor": request.lance_reais,
+                "quantidade_desejada": request.quantidade_desejada
+            }}
+        )
+        
+        return {"status": "success", "transaction_hash": tx_hash.hex()}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/finalizar_leilao/")
+async def finalizar_leilao(request: FinalizarLeilaoRequest):
+    try:
+        tx_hash = ethereum_auction.finalizar_leilao(request.beneficiario_address, request.beneficiario_private_key)
+        result = collection.delete_one({"_id": ObjectId(request.oferta_id)})
+        return {"status": "success", "transaction_hash": tx_hash.hex()}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     
-@app.get("/offers")
-async def get_offers():
-    result = contract.functions.visualizarOfertas().call()
-    offers = []
-    for offer in result:
-        offers.append({
-            "produtor": offer[0],
-            "quantidadeDisponivel": offer[1],
-            "precoMinimoPorKwhEmReais": offer[2],
-            "ativa": offer[3]
-        })
-    return {"offers": offers}
-
-@app.post("/fazer_proposta")
-async def fazer_proposta(oferta_index: int, quantidade_desejada: int, preco_oferecido_em_reais: int, sender_address: str):
+@app.get("/maior_lance/{oferta_id}")
+def get_maior_lance(oferta_id: str):
     try:
-        tx_hash = contract.functions.fazerProposta(oferta_index, quantidade_desejada, preco_oferecido_em_reais).transact({'from': sender_address})
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-        return {"message": "Proposta feita com sucesso", "transaction_hash": tx_hash.hex()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        oferta = collection.find_one({"_id": ObjectId(oferta_id)})
+        if oferta is None:
+            raise HTTPException(status_code=404, detail="Oferta não encontrada")
+        
+        maior_lance_valor = oferta.get("maior_lance_valor", 0.0)
+        maior_lance_comprador = oferta.get("maior_lance_publico", "")
+        quantidade_proposta = oferta.get("quantidade_desejada", 0.0)
 
-@app.post("/finalizar_compra/")
-async def finalizar_compra(sender_address: str):
+        return {
+            "maior_lance": maior_lance_valor,
+            "comprador": maior_lance_comprador,
+            "quantidade_proposta": quantidade_proposta
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    
+@app.get("/tempo_final_leilao/")
+async def get_tempo_final_leilao():
     try:
-        tx_hash = contract.functions.finalizarCompra().transact({'from': sender_address, 'value': contract.functions.precoTotal().call()})
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-        return {"message": "Compra finalizada com sucesso", "transaction_hash": tx_hash.hex()}
+        tempo_final = ethereum_auction.get_tempo_final_leilao()
+        return {"tempo_final": tempo_final}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"error": str(e)}
 
-# @app.get("/encontrar_melhor_oferta/{quantidade_desejada}")
-# async def encontrar_melhor_oferta(quantidade_desejada: int):
-#     try:
-#         melhor_oferta = contract.functions._encontrarMelhorOferta(quantidade_desejada).call()
-#         return {"melhor_oferta": melhor_oferta}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
+def get_eth_to_brl_conversion_rate():
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=brl"
+    response = requests.get(url)
+    data = response.json()
+    return data['ethereum']['brl']
+    # valor_ether_hoje = 19455 #19/06/2024
+    # return valor_ether_hoje
+
+def remover_ofertas_expiradas(collection):
+    try:
+        current_time = datetime.now()
+        for oferta in collection.find():
+            tempo_limite_oferta = datetime.strptime(oferta["time_limit"], "%Y-%m-%d %H:%M:%S")
+            if current_time > tempo_limite_oferta:
+                collection.delete_one({"_id": oferta["_id"]})
+                print(f"Oferta expirada removida: {oferta['_id']}")
+    except Exception as e:
+        print(f"Erro ao remover ofertas expiradas: {str(e)}")
+
+@app.post("/remover_ofertas_expiradas/")
+async def remover_ofertas_expiradas_endpoint():
+    remover_ofertas_expiradas(collection)
+    return {"message": "Ofertas expiradas removidas imediatamente."}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

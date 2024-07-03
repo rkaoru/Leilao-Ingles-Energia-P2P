@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro e Visualização de Ofertas</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Cadastro de Oferta</h2>
+        <form id="ofertaForm">
+            <div class="form-group">
+                <label for="nome">Nome</label>
+                <input type="text" class="form-control" id="nome" placeholder="Insira seu nome" required>
+            </div>
+            <div class="form-group">
+                <label for="enderecoPublico">Endereço público da carteira virtual</label>
+                <input type="text" class="form-control" id="enderecoPublico" placeholder="Insira o endereço público da carteira" required>
+            </div>
+            <div class="form-group">
+                <label for="enderecoPrivado">Endereço privado da carteira virtual</label>
+                <input type="password" class="form-control" id="enderecoPrivado" placeholder="Insira o endereço privado da carteira" required>
+            </div>
+            <div class="form-group">
+                <label for="energiaDisponivel">Quantidade disponível de Energia (kWh)</label>
+                <input type="number" step="0.01" class="form-control" id="energiaDisponivel" placeholder="Insira a quantidade de energia disponível" required>
+            </div>
+            <div class="form-group">
+                <label for="precoMinimo">Preço mínimo por kWh (R$)</label>
+                <input type="number" step="0.01" class="form-control" id="precoMinimo" placeholder="Insira o preço mínimo por kWh" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Cadastrar Oferta</button>
+        </form>
+
+        <h2 class="mb-4 mt-5">Ofertas Cadastradas</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Energia Disponível (kWh)</th>
+                    <th>Preço Mínimo (R$)</th>
+                    <th>Tempo Limite</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="ofertasTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="chaveModal" tabindex="-1" role="dialog" aria-labelledby="chaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="chaveModalLabel">Inserir Chave Pública e Privada</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="chaveForm">
+                        <div class="form-group">
+                            <label for="chavePublica">Chave Pública</label>
+                            <input type="text" class="form-control" id="chavePublica" placeholder="Insira a chave pública" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="chavePrivada">Chave Privada</label>
+                            <input type="password" class="form-control" id="chavePrivada" placeholder="Insira a chave privada" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script> src="script-vendedor.js" </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
