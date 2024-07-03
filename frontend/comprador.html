@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualizar Ofertas</title>
-    <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Estilo personalizado para a tabela */
         .table-expandida th, .table-expandida td {
-            white-space: nowrap; /* Evita que o conteúdo da célula quebre em várias linhas */
-            overflow: hidden; /* Oculta o conteúdo que transborda da célula */
-            text-overflow: ellipsis; /* Adiciona reticências (...) quando o conteúdo da célula transborda */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .info-label {
@@ -27,7 +25,7 @@
 <body>
     <div class="container mt-5">
         <h2 class="mb-4">Ofertas Cadastradas</h2>
-        <table class="table table-expandida"> <!-- Adiciona a classe "table-expandida" -->
+        <table class="table table-expandida">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -39,12 +37,10 @@
                 </tr>
             </thead>
             <tbody id="ofertasTableBody">
-                <!-- Ofertas serão carregadas aqui -->
             </tbody>
         </table>
     </div>
 
-    <!-- Modal para Fazer Proposta -->
     <div class="modal fade" id="propostaModal" tabindex="-1" aria-labelledby="propostaModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
