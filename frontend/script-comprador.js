@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 ofertas = data;
                 const ofertasTableBody = document.getElementById('ofertasTableBody');
-                ofertasTableBody.innerHTML = ''; // Limpar tabela antes de recarregar
+                ofertasTableBody.innerHTML = '';
                 data.forEach(oferta => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('quantidadeAlerta').classList.add('d-none');
                         document.getElementById('erro').classList.add('d-none');
 
-                        // Buscar e exibir o maior lance da oferta selecionada
                         fetch(`http://localhost:8000/maior_lance/${ofertaId}`)
                             .then(response => response.json())
                             .then(data => {
@@ -111,11 +110,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    oferta_id: ofertaSelecionada.id, // Adicionado o ID da oferta selecionada
+                    oferta_id: ofertaSelecionada.id,
                     account_address: accountAddress,
                     private_key: privateKey,
                     lance_reais: lance,
-                    quantidade_desejada: quantidadeDesejada // Adicionado a quantidade desejada
+                    quantidade_desejada: quantidadeDesejada 
                 }),
             })
             .then(response => {
@@ -127,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 alert('Proposta enviada com sucesso!');
                 $('#propostaModal').modal('hide');
-                carregarOfertas(); // Recarregar ofertas após fazer uma proposta
+                carregarOfertas();
             })
             .catch((error) => {
                 document.getElementById('erro').textContent = error.message;
