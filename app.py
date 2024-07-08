@@ -124,7 +124,6 @@ def get_maior_lance(oferta_id: str):
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
     
 @app.get("/tempo_final_leilao/")
 async def get_tempo_final_leilao():
